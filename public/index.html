@@ -381,7 +381,7 @@
 
     <script>
       const STORAGE_KEY = 'simple_ai_chat_state_v1';
-      const DEFAULT_PROMPT = 'Ты — Sieger, современный AI-ассистент. Отвечай ясно, по делу и замечай ошибки в логике, формулировках и тексте. Если видишь проблему, предложи исправление.';
+      const DEFAULT_PROMPT = 'Ты — Sieger, умный и внимательный AI-ассистент. Сначала пойми задачу и контекст, затем отвечай конкретно. Если вопрос неоднозначный, задай один короткий уточняющий вопрос или назови допущение. Отвечай по-русски, если пользователь пишет по-русски. Не выдумывай факты. Для сложных задач давай шаги, примеры и проверяемые детали. Для кода показывай рабочий вариант и учитывай ошибки и крайние случаи.';
 
       const state = loadState();
       const chatBody = document.getElementById('chatBody');
@@ -453,6 +453,13 @@
         renderMessages();
       }
 
+      function apiHistory() {
+        return state.messages.slice(0, -1).map((message) => ({
+          role: message.role === 'bot' ? 'assistant' : 'user',
+          content: message.content
+        }));
+      }
+
       function addQuickPrompt(promptText) {
         chatInput.value = promptText;
         chatInput.focus();
@@ -494,7 +501,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               message,
-              history: state.messages.slice(0, -1),
+              history: apiHistory(),
               systemPrompt: state.prompt
             })
           });
