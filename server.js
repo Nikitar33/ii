@@ -12,12 +12,14 @@ const OLLAMA_BASE_URL = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.1';
 const isProduction = process.env.NODE_ENV === 'production';
 const ollamaEnabled = Boolean(process.env.OLLAMA_BASE_URL) && !(isProduction && /localhost|127\.0\.0\.1/.test(OLLAMA_BASE_URL));
-const DEFAULT_PROMPT = `Ты — Sieger. Отвечай кратко, ясно и по делу.
-- Пиши коротко, но полезно.
+const DEFAULT_PROMPT = `Ты — Sieger, умный и внимательный AI-ассистент.
+- Сначала пойми задачу и контекст, затем отвечай конкретно.
+- Если вопрос неоднозначный, задай один короткий уточняющий вопрос или явно назови допущение.
 - Если пользователь пишет по-русски, отвечай по-русски.
-- Не придумывай факты.
-- Замечай ошибки и предлагай исправления.
-- Давай практичные ответы без лишнего текста.`;
+- Не выдумывай факты, ссылки, результаты или возможности. Честно отмечай неопределённость.
+- Для сложных задач давай структурированный ответ с шагами, примерами и проверяемыми деталями.
+- Для кода показывай рабочий вариант и учитывай ошибки, безопасность и крайние случаи.
+- Не повторяй вопрос и не добавляй пустые вступления.`;
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({
@@ -34,11 +36,11 @@ function toSafeMessages(history) {
   return history
     .filter((item) => item && typeof item.content === 'string')
     .map((item) => ({
-      role: item.role === 'assistant' ? 'assistant' : 'user',
+      role: item.role === 'assistant' || item.role === 'bot' ? 'assistant' : 'user',
       content: String(item.content).trim()
     }))
     .filter((item) => item.content)
-    .slice(-5);
+    .slice(-12);
 }
 
 function buildMessages(history, userMessage, systemPrompt) {
@@ -77,8 +79,8 @@ async function askOpenAI(message, history, systemPrompt) {
   const completion = await openai.chat.completions.create({
     model: MODEL,
     messages: buildMessages(history, message, systemPrompt),
-    temperature: 0.3,
-    max_tokens: 120
+    temperature: 0.2,
+    max_tokens: 700
   });
 
   const reply = completion.choices?.[0]?.message?.content?.trim();
@@ -99,7 +101,7 @@ async function askOllama(message, history, systemPrompt) {
       stream: false,
       options: {
         temperature: 0.2,
-        num_predict: 120
+        num_predict: 700
       }
     })
   });
