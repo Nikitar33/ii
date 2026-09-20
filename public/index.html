@@ -333,6 +333,128 @@
           height: 440px;
         }
       }
+
+      @media (max-width: 600px) {
+        body {
+          padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+          overflow-x: hidden;
+        }
+
+        .app {
+          min-height: calc(100dvh - 16px);
+        }
+
+        .toolbar {
+          align-items: flex-start;
+          gap: 10px;
+          margin-bottom: 10px;
+          padding: 4px 2px;
+        }
+
+        .brand-wrap {
+          gap: 8px;
+        }
+
+        .brand-mark {
+          width: 38px;
+          height: 38px;
+          border-radius: 11px;
+        }
+
+        .brand {
+          font-size: 1.25rem;
+        }
+
+        .brand small {
+          font-size: 0.58rem;
+          letter-spacing: 0.06em;
+        }
+
+        .toolbar-actions {
+          justify-content: flex-end;
+          gap: 6px;
+        }
+
+        .toolbar-actions .btn {
+          padding: 9px 10px;
+          font-size: 0.75rem;
+        }
+
+        .sidebar,
+        .chat-panel {
+          border-radius: 16px;
+        }
+
+        .chat-panel {
+          display: flex;
+          flex-direction: column;
+          min-height: calc(100dvh - 76px);
+        }
+
+        .sidebar {
+          padding: 14px;
+        }
+
+        .quick-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
+        .quick-btn {
+          min-height: 52px;
+          padding: 10px;
+          font-size: 0.82rem;
+        }
+
+        .prompt-box textarea {
+          min-height: 120px;
+        }
+
+        .chat-head {
+          padding: 14px;
+        }
+
+        .chat-title {
+          font-size: 0.95rem;
+        }
+
+        .status-pill {
+          padding: 6px 9px;
+          font-size: 0.75rem;
+        }
+
+        .chat-body {
+          flex: 1 1 auto;
+          height: auto;
+          min-height: 0;
+          padding: 16px 12px;
+        }
+
+        .msg {
+          max-width: 92%;
+          padding: 12px 13px;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+
+        .chat-form {
+          gap: 7px;
+          padding: 10px;
+          padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+
+        .chat-form input {
+          min-width: 0;
+          padding: 13px 12px;
+          font-size: 16px;
+        }
+
+        .chat-form .btn {
+          min-width: 0;
+          padding: 12px 13px;
+        }
+      }
     </style>
   </head>
   <body data-theme="light">
@@ -391,6 +513,7 @@
       const themeToggle = document.getElementById('themeToggle');
       const newChatBtn = document.getElementById('newChatBtn');
       const savePromptBtn = document.getElementById('savePromptBtn');
+      const submitBtn = chatForm.querySelector('button[type="submit"]');
 
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -494,6 +617,9 @@
 
         pushMessage('user', message);
         chatInput.value = '';
+        chatInput.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '...';
 
         try {
           const response = await fetch('/api/chat', {
@@ -514,6 +640,11 @@
           pushMessage('bot', data.reply || 'Не удалось получить ответ.');
         } catch (error) {
           pushMessage('bot', error.message || 'Сервис временно недоступен. Проверьте ключ API и сервер.');
+        } finally {
+          chatInput.disabled = false;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Отправить';
+          chatInput.focus();
         }
       });
 
