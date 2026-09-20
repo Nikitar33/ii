@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -60,12 +61,18 @@
         transition: background 0.25s ease, color 0.25s ease;
       }
 
+      html {
+        overflow-x: hidden;
+      }
+
       body {
         padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        overflow-x: hidden;
       }
 
       .app {
-        max-width: 1600px;
+        width: min(100%, 1600px);
+        max-width: 100%;
         margin: 0 auto;
         min-height: calc(100vh - 24px);
       }
@@ -142,7 +149,7 @@
 
       .layout {
         display: grid;
-        grid-template-columns: 340px minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr);
         gap: 20px;
         min-height: calc(100vh - 120px);
       }
@@ -176,55 +183,7 @@
       }
 
       .sidebar {
-        padding: 18px;
-      }
-
-      .sidebar h3 {
-        margin: 0 0 14px;
-        font-size: 0.9rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
-
-      .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-
-      .quick-btn {
-        width: 100%;
-        text-align: left;
-        background: var(--panel-alt);
-        border: 1px solid var(--line);
-        color: var(--ink);
-        border-radius: 12px;
-        padding: 12px 14px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-
-      .prompt-box {
-        margin-top: 12px;
-      }
-
-      .prompt-box textarea {
-        width: 100%;
-        min-height: 150px;
-        resize: vertical;
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 14px;
-        background: rgba(255,255,255,0.2);
-        color: var(--ink);
-        font: inherit;
-      }
-
-      .prompt-box .btn {
-        width: 100%;
-        margin-top: 10px;
+        display: none;
       }
 
       .chat-panel {
@@ -341,10 +300,12 @@
         }
 
         .app {
+          width: 100%;
           min-height: calc(100dvh - 16px);
         }
 
         .toolbar {
+          flex-wrap: wrap;
           align-items: flex-start;
           gap: 10px;
           margin-bottom: 10px;
@@ -371,11 +332,13 @@
         }
 
         .toolbar-actions {
+          width: 100%;
           justify-content: flex-end;
           gap: 6px;
         }
 
         .toolbar-actions .btn {
+          flex: 1 1 auto;
           padding: 9px 10px;
           font-size: 0.75rem;
         }
@@ -393,22 +356,6 @@
 
         .sidebar {
           padding: 14px;
-        }
-
-        .quick-actions {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
-
-        .quick-btn {
-          min-height: 52px;
-          padding: 10px;
-          font-size: 0.82rem;
-        }
-
-        .prompt-box textarea {
-          min-height: 120px;
         }
 
         .chat-head {
@@ -439,19 +386,26 @@
         }
 
         .chat-form {
+          display: flex;
+          flex-direction: column;
           gap: 7px;
           padding: 10px;
           padding-bottom: max(10px, env(safe-area-inset-bottom));
         }
 
-        .chat-form input {
+        .chat-form input,
+        .chat-form .btn {
+          width: 100%;
           min-width: 0;
+          box-sizing: border-box;
+        }
+
+        .chat-form input {
           padding: 13px 12px;
           font-size: 16px;
         }
 
         .chat-form .btn {
-          min-width: 0;
           padding: 12px 13px;
         }
       }
@@ -471,22 +425,6 @@
       </header>
 
       <div class="layout">
-        <aside class="sidebar">
-          <h3>Быстрые действия</h3>
-          <div class="quick-actions">
-            <button class="quick-btn" type="button" data-prompt="Сделай продуманный план по развитию проекта AI">План проекта</button>
-            <button class="quick-btn" type="button" data-prompt="Объясни LLM простыми словами и покажи сильные стороны">Что такое LLM</button>
-            <button class="quick-btn" type="button" data-prompt="Найди возможные ошибки в этом тексте и предложи исправления">Проверить ошибки</button>
-            <button class="quick-btn" type="button" data-prompt="Напиши современный код на JavaScript для чата с AI">Код чата</button>
-          </div>
-
-          <div class="prompt-box">
-            <h3>Промпт системы</h3>
-            <textarea id="systemPrompt" spellcheck="false">Ты — Sieger, современный AI-ассистент. Отвечай ясно, по делу и замечай ошибки в логике, формулировках и тексте. Если видишь проблему, предложи исправление.</textarea>
-            <button class="btn primary" id="savePromptBtn" type="button">Сохранить промпт</button>
-          </div>
-        </aside>
-
         <main class="chat-panel">
           <div class="chat-head">
             <div class="chat-title">Чат Sieger</div>
@@ -509,13 +447,11 @@
       const chatBody = document.getElementById('chatBody');
       const chatForm = document.getElementById('chatForm');
       const chatInput = document.getElementById('chatInput');
-      const systemPromptEl = document.getElementById('systemPrompt');
       const themeToggle = document.getElementById('themeToggle');
       const newChatBtn = document.getElementById('newChatBtn');
-      const savePromptBtn = document.getElementById('savePromptBtn');
       const submitBtn = chatForm.querySelector('button[type="submit"]');
 
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
